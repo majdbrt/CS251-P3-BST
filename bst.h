@@ -224,13 +224,23 @@ class bst {
     T max() {
       return _max_node(root)->val;
     }
-
+    private:
+    void _to_vector(std::vector<T>* arr, bst_node* root){
+      if(root == nullptr)
+        return;
+      
+      _to_vector(arr, root->left);
+      arr->push_back(root->val);
+      _to_vector(arr, root->right);
+      return;
+    }
+    public:
     /******************************************
      *
      * "stubs" for assigned TODO functions below 
      *
      *****************************************/
-
+    
     /* TODO
      * Function:  to_vector
      * Description:  allocates a vector of type T and populates
@@ -241,9 +251,13 @@ class bst {
      *
      */
     std::vector<T> * to_vector() {
-      return nullptr;
-    }
+      std::vector<T>* answer = new std::vector<T>();
+      
+      _to_vector(answer, root);
 
+      return answer;
+    }
+    
 
     /* TODO
      * Function:  get_ith

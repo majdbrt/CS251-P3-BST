@@ -28,6 +28,21 @@ int main(){
     for(int i = 0; i < arr->size(); i++){
       std::cout<< arr->at(i) << std::endl;
     }// for
+    int z = 0;
+    /*
+    t->get_ith(9,z);
+    std::cout << "ith: " << z << std::endl;
+
+    std::cout << "position of: " << t->position_of(3)<<std::endl;
+    for(int i = 0; i < 18; i++){
+      std::cout << "num-geq: " << t->num_geq(i)<<std::endl;
+    std::cout << "num-geq slow: " << t->num_geq_SLOW(i)<<std::endl;
+    }
+    */
+    for(int i = 0; i < 18; i++){
+      std::cout << "num-leq: " << t->num_leq(i)<<std::endl;
+    std::cout << "num-leq slow: " << t->num_leq_SLOW(i)<<std::endl;
+    }
 // my code
     delete t;
     

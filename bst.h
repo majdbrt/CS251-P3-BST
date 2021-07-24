@@ -13,9 +13,16 @@ class bst {
       bst_node *left;
       bst_node *right;
 
+      int size_left;
+      int size_right;
+
       bst_node ( const T & _val = T{}, bst_node * l = nullptr, bst_node *r = nullptr)
         : val { _val },  left { l }, right {r} 
-      { }
+      {
+        size_left = 0;
+        size_right = 0;
+      }
+
     };
 
 
@@ -65,10 +72,12 @@ class bst {
       }
       if(x < r->val){
         r->left = _insert(r->left, x, success);
+        r->size_left++;
         return r;
       }
       else {
         r->right = _insert(r->right, x, success);
+        r->size_right++;
         return r;
       }
     }
@@ -225,7 +234,7 @@ class bst {
       return _max_node(root)->val;
     }
     private:
-    void _to_vector(std::vector<T>* arr, bst_node* root){
+    static void _to_vector(std::vector<T>* arr, bst_node* root){
       if(root == nullptr)
         return;
       
@@ -258,6 +267,27 @@ class bst {
       return answer;
     }
     
+    private:
+    static void _get_ith(bst_node* root, int i, T &x){
+      if(root == nullptr)
+        return;
+      
+      if(i == root->size_left + 1 ){
+        x = root->val;
+        return;
+      }// if
+
+      if(i <= root->size_left)
+        _get_ith(root->left, i, x);
+      
+      else{
+        i = i - (root->size_left + 1);
+        _get_ith(root->right, i, x);
+      }// else
+      
+      return;
+    }
+    public:
 
     /* TODO
      * Function:  get_ith
@@ -272,6 +302,11 @@ class bst {
      * Runtime:  O(h) where h is the tree height
      */
     bool get_ith(int i, T &x) {
+      if(root == nullptr || i > (root->size_left + root->size_right + 1) || i <= 0)
+        return false;
+
+      _get_ith(root, i, x);
+      
       return false;   // placeholder
     }
 
@@ -309,6 +344,30 @@ class bst {
       }
       _get_ith_SLOW(t->right, i, x, sofar);
     }
+
+  static void _position_of(bst_node* root, int& i, const T & x){
+    if(root == nullptr){
+      i = -1;
+      return;
+    }
+
+    if(x == root->val){
+      i = i + root->size_left + 1;
+      return;
+    }
+
+    if(x < root->val)
+      _position_of(root->left, i, x);
+    
+
+    else{
+      i = i + root->size_left + 1 ;
+       _position_of(root->right, i, x);
+    }// else
+    
+    return;
+  }
+
 
   public:
 
@@ -349,9 +408,33 @@ class bst {
      * Runtime:  O(h) where h is the tree height
      */
     int position_of(const T & x) {
-      return 0;  // placeholder
+      int i = 0;
+      _position_of(root, i, x);
+      return i;  // placeholder
     }
 
+    private:
+
+    static void _num_geq(bst_node* root, int& n, const T & x){
+      if(root == nullptr)
+        return;
+
+      n = n + root->size_right + 1;
+       
+      if(x == root->val)
+        return;
+      
+
+      if(x > root->val){
+        n -= root->size_right + 1;
+        _num_geq(root->right, n, x);
+      }
+      else
+        _num_geq(root->left, n, x);
+
+    }
+
+    public:
     /* TODO
      * Function:  num_geq
      * Description:  returns the number of elements in tree which are 
@@ -360,7 +443,9 @@ class bst {
      * Runtime:  O(h) where h is the tree height
      */
     int num_geq(const T & x) {
-      return 0;  // placeholder
+      int n = 0;
+      _num_geq(root, n, x);
+      return n;  // placeholder
     }
 
     /*
@@ -384,7 +469,26 @@ class bst {
         total++;
       return total;
     }
+  
+  private:
+  static void _num_leq(bst_node* root, int& n, const T &x){
+    if(root == nullptr)
+      return;
     
+    n = n + root->size_left + 1;
+
+    if(x == root->val)
+      return;
+    
+    if(x < root->val){
+      n -= root->size_left + 1;
+      _num_leq(root->left, n, x);
+    }
+    else{
+      _num_leq(root->right, n, x);
+    }
+
+  }
   public:
 
     /* TODO
@@ -396,7 +500,9 @@ class bst {
      *
      **/
     int num_leq(const T &x) {
-      return 0;  // placeholder
+      int n = 0;
+      _num_leq(root, n, x);
+      return n;  // placeholder
     }
 
     /*
@@ -421,6 +527,20 @@ class bst {
       return total;
     }
 
+    static void _num_range(bst_node* root, int& n, const T & min, const T & max){
+      if(root == nullptr)
+        return;
+
+      if(min == max){
+        n++;
+        return;
+      }
+
+      if(min )
+
+      
+    }
+
   public:
 
     /* TODO
@@ -432,7 +552,9 @@ class bst {
      *
      **/
     int num_range(const T & min, const T & max) {
-      return 0;
+      int n = 0;
+      _num_range(root, n, min, max);
+      return n;
     }
 
     /*
@@ -505,6 +627,10 @@ class bst {
       if(r==nullptr) return;
       _inorder(r->left);
       std::cout << "[ " << r->val << " ]\n";
+      // my code
+      std::cout<< "size left: " << r->size_left<<std::endl;
+      std::cout<< "size right: " << r->size_right <<std::endl;
+      //
       _inorder(r->right);
     }
 

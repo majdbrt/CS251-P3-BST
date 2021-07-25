@@ -531,13 +531,19 @@ class bst {
       if(root == nullptr)
         return;
 
-      if(min == max){
-        n++;
+      if( root->val > max ){
+        _num_range(root->left, n,  min, max);
         return;
       }
 
-      if(min )
+      if(root->val <  min){
+        _num_range(root->right, n, min, max);
+        return;
+      }
 
+      n++;
+      _num_range(root->left, n, min, max);
+      _num_range(root->right, n, min, max);;
       
     }
 
@@ -553,7 +559,9 @@ class bst {
      **/
     int num_range(const T & min, const T & max) {
       int n = 0;
+
       _num_range(root, n, min, max);
+      
       return n;
     }
 

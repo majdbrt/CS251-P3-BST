@@ -38,11 +38,15 @@ int main(){
       std::cout << "num-geq: " << t->num_geq(i)<<std::endl;
     std::cout << "num-geq slow: " << t->num_geq_SLOW(i)<<std::endl;
     }
-    */
+    
     for(int i = 0; i < 18; i++){
       std::cout << "num-leq: " << t->num_leq(i)<<std::endl;
     std::cout << "num-leq slow: " << t->num_leq_SLOW(i)<<std::endl;
-    }
+    }*/
+
+    std::cout<< "range: " << t->num_range(8,17)<<std::endl;
+    std::cout<< "range slow: " << t->num_range_SLOW(8,17)<<std::endl;
+    
 // my code
     delete t;
     

@@ -15,13 +15,14 @@ int main(){
     }
         
 
-    if(t->size() <= 20) {
+    if(t->size() <= 500) {
       t->inorder();
       t->preorder();
     }
 
     h = t->height();
     std::cout << "\n#### Reported height of tree:   " << h << "\n";
+    /*
     // my code
     std::vector<int>* arr = t->to_vector();
     std:: cout << "vector" << std::endl;
@@ -60,13 +61,14 @@ int main(){
    t->inorder();
   */
  //std:: cout<< arr->size()<< std::endl;
+ /*
   bst<int> *copy ;
   copy = copy->from_sorted_vec(*arr, arr->size());
   
   //std::cout<<"sa " <<copy->size();
   //copy = t;
-  copy->inorder();
-
+  copy->preorder();
+*/
 // my code
     delete t;
     

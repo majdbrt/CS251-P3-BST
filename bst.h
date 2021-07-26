@@ -50,6 +50,24 @@ class bst {
     }
 
   private:
+    static int _max_subTree(int x, int y){
+      if(x >=  y)
+        return x;
+      return y;
+    }
+    static int _min_subTree(int x, int y){
+      if(x <= y)
+        return x;
+      return y;
+    }
+
+    static bool violater_node(int min, int max){
+      if(max > 2*min + 1)
+        return true;
+      return false;
+    }
+
+    
 
 /**
  * function:  insert()
@@ -60,7 +78,7 @@ class bst {
  *
  * notes:     if x is already in tree, no modifications are made.
  */
-    static bst_node * _insert(bst_node *r, T & x, bool &success){
+    static bst_node * _insert(bst_node *r, T & x, bool &success, bst_node* & violation, bst_node* &violationParent, bool& leftChild){
       if(r == nullptr){
         success = true;
         return new bst_node(x, nullptr, nullptr);
@@ -71,15 +89,87 @@ class bst {
         return r;
       }
       if(x < r->val){
-        r->left = _insert(r->left, x, success);
+        r->left = _insert(r->left, x, success, violation, violationParent, leftChild);
         r->size_left++;
+
+        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+          violation = r;
+
+        if(r->left == violation){
+          violationParent = r;
+          leftChild = true;
+        }
+        else if(r->right == violation){
+          violationParent = r;
+          leftChild = false;
+        }
+
         return r;
-      }
+      }// if
+
       else {
-        r->right = _insert(r->right, x, success);
+        r->right = _insert(r->right, x, success, violation, violationParent, leftChild);
         r->size_right++;
+
+        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+          violation = r;
+
+        if(r->left == violation){
+          violationParent = r;
+          leftChild = true;
+        }
+        else if(r->right == violation){
+          violationParent = r;
+          leftChild = false;
+        }
+
         return r;
-      }
+      }// else
+    }
+
+    static void _to_node_vec(std::vector<bst_node*>* arr, bst_node* root){
+      if(root == nullptr)
+        return;
+
+      _to_node_vec(arr, root->left);
+      arr->push_back(root);
+      _to_node_vec(arr, root->right);
+
+      return;
+    }
+
+    static bst_node* _from_node_vec( std::vector<bst_node*>* &arr, int low, int hi){
+      int m;
+      bst_node* root;
+
+      if(hi < low)
+        return nullptr;
+      
+      m = (low + hi)/2;
+      root = arr->at(m);
+
+      root->size_left = m - low;
+      root->size_right = hi - m;
+
+      root->left  = _from_node_vec(arr, low, m-1);
+      root->right = _from_node_vec(arr, m+1, hi);
+      
+      return root;
+    }
+
+    static void _size_balanced(bst_node* &violation, bst_node* &violationParent, bool leftChild){
+      std::vector<bst_node*> *arr = new std::vector<bst_node*>();
+
+      _to_node_vec(arr, violation);
+
+      violation = _from_node_vec(arr,0, violation->size_left + violation->size_right);
+
+      if(leftChild)
+        violationParent->left = violation;
+      else
+        violationParent->right = violation;
+
+      delete arr;
     }
 
 
@@ -96,7 +186,17 @@ class bst {
    */
    bool insert(T & x){
       bool success;
-      root = _insert(root, x, success);
+      bst_node* violation = nullptr;
+      bst_node* violationParent;
+      bool leftChild = false;
+      root = _insert(root, x, success, violation, violationParent, leftChild);
+
+      if(violation != nullptr){
+        std::cout<< "final violation: " <<violation->val <<std::endl;
+        _size_balanced(violation, violationParent, leftChild);
+      }
+        
+      
       return success;
    }
 

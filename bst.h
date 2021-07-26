@@ -152,7 +152,7 @@ class bst {
       if(r==nullptr){
         success = false;
         return nullptr;
-      }
+      }// of
       if(r->val == x){
         success = true;
 
@@ -160,25 +160,30 @@ class bst {
           tmp = r->right;
           delete r;
           return tmp;
-        }
+        }// if
         if(r->right == nullptr){
           tmp = r->left;
           delete r;
           return tmp;
-        }
+        }// if
         // if we get here, r has two children
         r->val = _min_node(r->right)->val;
+        r->size_right--;
         r->right = _remove(r->right, r->val, sanity);
         if(!sanity)
           std::cerr << "ERROR:  remove() failed to delete promoted value?\n";
         return r;
-      }
+      }// if
       if(x < r->val){
         r->left = _remove(r->left, x, success);
-      }
+        if(success)
+          r->size_left--;
+      }// if
       else {
         r->right = _remove(r->right, x, success);
-      }
+        if(success)
+          r->size_right--;
+      }// else
       return r;
 
     }
@@ -636,7 +641,7 @@ class bst {
       std:: vector<int> *answer = new std::vector<int>;
 
       _extract_range(root, answer, min, max);
-      
+
       return answer;
     }
 
@@ -710,17 +715,22 @@ class bst {
       if(hi < low) return nullptr;
       m = (low+hi)/2;
       root = new bst_node(a[m]);
+
+      // update size of left tree and right tree.
+      root->size_left = m - low;
+      root->size_right = hi - m;
+      
       root->left  = _from_vec(a, low, m-1);
       root->right = _from_vec(a, m+1, hi);
+        
       return root;
-
     }
 
   public:
     static bst * from_sorted_vec(const std::vector<T> &a, int n){
-
       bst * t = new bst();
       t->root = _from_vec(a, 0, n-1);
+
       return t;
     }
 

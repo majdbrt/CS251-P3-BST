@@ -43,7 +43,7 @@ int main(){
       std::cout << "num-leq: " << t->num_leq(i)<<std::endl;
     std::cout << "num-leq slow: " << t->num_leq_SLOW(i)<<std::endl;
     }*/
-
+    /*
     std::cout<< "range: " << t->num_range(8,17)<<std::endl;
     std::cout<< "range slow: " << t->num_range_SLOW(8,17)<<std::endl;
     std::vector<int>* answer = t->extract_range(17, 19);
@@ -51,7 +51,22 @@ int main(){
     for(int i = 0; i < answer->size(); i++){
       std::cout<< answer->at(i) << std::endl;
     }// for
-    
+    */
+   /*
+   int y = 5;
+   
+   t->inorder();
+   t->remove(y);
+   t->inorder();
+  */
+ //std:: cout<< arr->size()<< std::endl;
+  bst<int> *copy ;
+  copy = copy->from_sorted_vec(*arr, arr->size());
+  
+  //std::cout<<"sa " <<copy->size();
+  //copy = t;
+  copy->inorder();
+
 // my code
     delete t;
     

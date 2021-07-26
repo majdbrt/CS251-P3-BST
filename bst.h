@@ -543,8 +543,7 @@ class bst {
 
       n++;
       _num_range(root->left, n, min, max);
-      _num_range(root->right, n, min, max);;
-      
+      _num_range(root->right, n, min, max);
     }
 
   public:
@@ -588,6 +587,24 @@ class bst {
       return total;
     }
 
+    static void _extract_range(bst_node* root, std::vector<T> *answer, const T & min, const T & max){
+      if(root == nullptr)
+        return;
+
+      if( root->val > max ){
+        _extract_range(root->left, answer,  min, max);
+        return;
+      }
+
+      if(root->val <  min){
+        _extract_range(root->right, answer, min, max);
+        return;
+      }
+      _extract_range(root->left, answer, min, max);
+      answer->push_back(root->val);
+      
+      _extract_range(root->right, answer, min, max);
+    }
   public:
 
     /*
@@ -616,7 +633,11 @@ class bst {
      *
      */
     std::vector<T> * extract_range(const T & min, const T & max) {
-      return nullptr;
+      std:: vector<int> *answer = new std::vector<int>;
+
+      _extract_range(root, answer, min, max);
+      
+      return answer;
     }
 
   /***************************************************

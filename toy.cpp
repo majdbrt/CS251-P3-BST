@@ -46,6 +46,11 @@ int main(){
 
     std::cout<< "range: " << t->num_range(8,17)<<std::endl;
     std::cout<< "range slow: " << t->num_range_SLOW(8,17)<<std::endl;
+    std::vector<int>* answer = t->extract_range(17, 19);
+    std:: cout << "vector" << std::endl;
+    for(int i = 0; i < answer->size(); i++){
+      std::cout<< answer->at(i) << std::endl;
+    }// for
     
 // my code
     delete t;

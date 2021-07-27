@@ -95,11 +95,11 @@ class bst {
         if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
           violation = r;
 
-        if(r->left == violation){
+        if(violation != nullptr && r->left == violation){
           violationParent = r;
           leftChild = true;
         }
-        else if(r->right == violation){
+        else if(violation != nullptr && r->right == violation){
           violationParent = r;
           leftChild = false;
         }
@@ -114,11 +114,11 @@ class bst {
         if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
           violation = r;
 
-        if(r->left == violation){
+        if(violation != nullptr && r->left == violation){
           violationParent = r;
           leftChild = true;
         }
-        else if(r->right == violation){
+        else if(violation != nullptr && r->right == violation){
           violationParent = r;
           leftChild = false;
         }
@@ -127,13 +127,13 @@ class bst {
       }// else
     }
 
-    static void _to_node_vec(std::vector<bst_node*>* arr, bst_node* root){
-      if(root == nullptr)
+    static void _to_node_vec(std::vector<bst_node*>* arr, bst_node* r){
+      if(r == nullptr)
         return;
 
-      _to_node_vec(arr, root->left);
-      arr->push_back(root);
-      _to_node_vec(arr, root->right);
+      _to_node_vec(arr, r->left);
+      arr->push_back(r);
+      _to_node_vec(arr, r->right);
 
       return;
     }
@@ -157,17 +157,23 @@ class bst {
       return root;
     }
 
-    static void _size_balanced(bst_node* &violation, bst_node* &violationParent, bool leftChild){
+     void _size_balanced(bst_node* &violation, bst_node* &violationParent, bool leftChild){
       std::vector<bst_node*> *arr = new std::vector<bst_node*>();
 
       _to_node_vec(arr, violation);
-
-      violation = _from_node_vec(arr,0, violation->size_left + violation->size_right);
-
-      if(leftChild)
-        violationParent->left = violation;
-      else
-        violationParent->right = violation;
+    
+      if(violation == this->root){
+        violation = _from_node_vec(arr,0, violation->size_left + violation->size_right);
+        std::cout<<violation->val <<std::endl;
+        this->root = violation;
+      }
+      else{
+        violation = _from_node_vec(arr,0, violation->size_left + violation->size_right);
+        if(leftChild)
+          violationParent->left = violation;
+        else
+          violationParent->right = violation;
+      }    
 
       delete arr;
     }
@@ -191,9 +197,9 @@ class bst {
       bool leftChild = false;
 
       root = _insert(root, x, success, violation, violationParent, leftChild);
-
+      
       if(violation != nullptr){
-        std::cout<< "final violation: " <<violation->val <<std::endl;
+        //std::cout<< "final violation: " <<violation->val <<std::endl;
         _size_balanced(violation, violationParent, leftChild);
       }// if        
       
@@ -284,10 +290,15 @@ class bst {
         if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
           violation = r;
 
-        if(r->left == violation){
+        if(violation != nullptr && r->left == violation){
           violationParent = r;
           leftChild = true;
         }
+        else if(violation != nullptr && r->right == violation){
+          violationParent = r;
+          leftChild = false;
+        }
+
       }// if
       else {
         r->right = _remove(r->right, x, success, violation, violationParent, leftChild);
@@ -297,9 +308,13 @@ class bst {
         if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
           violation = r;
 
-        if(r->left == violation){
+        if(violation != nullptr && r->left == violation){
           violationParent = r;
           leftChild = true;
+        }
+        else if(violation != nullptr && r->right == violation){
+          violationParent = r;
+          leftChild = false;
         }
       }// else
       return r;
@@ -317,7 +332,7 @@ class bst {
       root = _remove(root, x, success, violation, violationParent, leftChild);
       
       if(violation != nullptr){
-        std::cout<< "final violation: " <<violation->val <<std::endl;
+        //std::cout<< "final violation: " <<violation->val <<std::endl;
         _size_balanced(violation, violationParent, leftChild);
       }// if
       
@@ -335,7 +350,8 @@ class bst {
 
   public: 
     int size() {
-      return _size(root);
+      //return _size(root);
+      return root->size_left + root->size_right + 1;
     }
 
   private:
@@ -367,13 +383,13 @@ class bst {
       return _max_node(root)->val;
     }
     private:
-    static void _to_vector(std::vector<T>* arr, bst_node* root){
-      if(root == nullptr)
+    static void _to_vector(std::vector<T>* arr, bst_node* r){
+      if(r == nullptr)
         return;
       
-      _to_vector(arr, root->left);
-      arr->push_back(root->val);
-      _to_vector(arr, root->right);
+      _to_vector(arr, r->left);
+      arr->push_back(r->val);
+      _to_vector(arr, r->right);
       return;
     }
     public:
@@ -401,21 +417,21 @@ class bst {
     }
     
     private:
-    static void _get_ith(bst_node* root, int i, T &x){
-      if(root == nullptr)
+    static void _get_ith(bst_node* r, int i, T &x){
+      if(r == nullptr)
         return;
       
-      if(i == root->size_left + 1 ){
-        x = root->val;
+      if(i == r->size_left + 1 ){
+        x = r->val;
         return;
       }// if
 
-      if(i <= root->size_left)
-        _get_ith(root->left, i, x);
+      if(i <= r->size_left)
+        _get_ith(r->left, i, x);
       
       else{
-        i = i - (root->size_left + 1);
-        _get_ith(root->right, i, x);
+        i = i - (r->size_left + 1);
+        _get_ith(r->right, i, x);
       }// else
       
       return;
@@ -478,24 +494,24 @@ class bst {
       _get_ith_SLOW(t->right, i, x, sofar);
     }
 
-  static void _position_of(bst_node* root, int& i, const T & x){
-    if(root == nullptr){
+  static void _position_of(bst_node* r, int& i, const T & x){
+    if(r == nullptr){
       i = -1;
       return;
     }
 
-    if(x == root->val){
-      i = i + root->size_left + 1;
+    if(x == r->val){
+      i = i + r->size_left + 1;
       return;
     }
 
-    if(x < root->val)
-      _position_of(root->left, i, x);
+    if(x < r->val)
+      _position_of(r->left, i, x);
     
 
     else{
-      i = i + root->size_left + 1 ;
-       _position_of(root->right, i, x);
+      i = i + r->size_left + 1 ;
+       _position_of(r->right, i, x);
     }// else
     
     return;
@@ -548,22 +564,22 @@ class bst {
 
     private:
 
-    static void _num_geq(bst_node* root, int& n, const T & x){
-      if(root == nullptr)
+    static void _num_geq(bst_node* r, int& n, const T & x){
+      if(r == nullptr)
         return;
 
-      n = n + root->size_right + 1;
+      n = n + r->size_right + 1;
        
-      if(x == root->val)
+      if(x == r->val)
         return;
       
 
-      if(x > root->val){
-        n -= root->size_right + 1;
-        _num_geq(root->right, n, x);
+      if(x > r->val){
+        n -= r->size_right + 1;
+        _num_geq(r->right, n, x);
       }
       else
-        _num_geq(root->left, n, x);
+        _num_geq(r->left, n, x);
 
     }
 
@@ -604,21 +620,21 @@ class bst {
     }
   
   private:
-  static void _num_leq(bst_node* root, int& n, const T &x){
-    if(root == nullptr)
+  static void _num_leq(bst_node* r, int& n, const T &x){
+    if(r == nullptr)
       return;
     
-    n = n + root->size_left + 1;
+    n = n + r->size_left + 1;
 
-    if(x == root->val)
+    if(x == r->val)
       return;
     
-    if(x < root->val){
-      n -= root->size_left + 1;
-      _num_leq(root->left, n, x);
+    if(x < r->val){
+      n -= r->size_left + 1;
+      _num_leq(r->left, n, x);
     }
     else{
-      _num_leq(root->right, n, x);
+      _num_leq(r->right, n, x);
     }
 
   }
@@ -660,23 +676,23 @@ class bst {
       return total;
     }
 
-    static void _num_range(bst_node* root, int& n, const T & min, const T & max){
-      if(root == nullptr)
+    static void _num_range(bst_node* r, int& n, const T & min, const T & max){
+      if(r == nullptr)
         return;
 
-      if( root->val > max ){
-        _num_range(root->left, n,  min, max);
+      if( r->val > max ){
+        _num_range(r->left, n,  min, max);
         return;
       }
 
-      if(root->val <  min){
-        _num_range(root->right, n, min, max);
+      if(r->val <  min){
+        _num_range(r->right, n, min, max);
         return;
       }
 
       n++;
-      _num_range(root->left, n, min, max);
-      _num_range(root->right, n, min, max);
+      _num_range(r->left, n, min, max);
+      _num_range(r->right, n, min, max);
     }
 
   public:
@@ -720,23 +736,23 @@ class bst {
       return total;
     }
 
-    static void _extract_range(bst_node* root, std::vector<T> *answer, const T & min, const T & max){
-      if(root == nullptr)
+    static void _extract_range(bst_node* r, std::vector<T> *answer, const T & min, const T & max){
+      if(r == nullptr)
         return;
 
-      if( root->val > max ){
-        _extract_range(root->left, answer,  min, max);
+      if( r->val > max ){
+        _extract_range(r->left, answer,  min, max);
         return;
       }
 
-      if(root->val <  min){
-        _extract_range(root->right, answer, min, max);
+      if(r->val <  min){
+        _extract_range(r->right, answer, min, max);
         return;
       }
-      _extract_range(root->left, answer, min, max);
-      answer->push_back(root->val);
+      _extract_range(r->left, answer, min, max);
+      answer->push_back(r->val);
       
-      _extract_range(root->right, answer, min, max);
+      _extract_range(r->right, answer, min, max);
     }
   public:
 

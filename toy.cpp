@@ -70,12 +70,18 @@ int main(){
   copy->preorder();
 */
 // my code
-int y = 9;
-   
-   t->remove(y);
-   t->inorder();
-   t->preorder();
+
+  for(int i = 9; i > 0; i--){
+    if(i%2 == 0)
+      t->remove(i);
+  }
+
+   if(t->size() <= 500) {
+      t->inorder();
+      t->preorder();
+    }
     delete t;
+    
     
     return 0;
 }

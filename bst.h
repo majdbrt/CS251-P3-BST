@@ -189,13 +189,13 @@ class bst {
       bst_node* violation = nullptr;
       bst_node* violationParent;
       bool leftChild = false;
+
       root = _insert(root, x, success, violation, violationParent, leftChild);
 
       if(violation != nullptr){
         std::cout<< "final violation: " <<violation->val <<std::endl;
         _size_balanced(violation, violationParent, leftChild);
-      }
-        
+      }// if        
       
       return success;
    }
@@ -245,7 +245,7 @@ class bst {
 
     // recursive helper function for node removal
     //   returns root of resulting tree after removal.
-    static bst_node * _remove(bst_node *r, T & x, bool &success){
+    static bst_node * _remove(bst_node *r, T & x, bool &success, bst_node* & violation, bst_node* &violationParent, bool& leftChild){
       bst_node *tmp;
       bool sanity;
 
@@ -269,20 +269,38 @@ class bst {
         // if we get here, r has two children
         r->val = _min_node(r->right)->val;
         r->size_right--;
-        r->right = _remove(r->right, r->val, sanity);
+        r->right = _remove(r->right, r->val, sanity, violation, violationParent, leftChild);
         if(!sanity)
           std::cerr << "ERROR:  remove() failed to delete promoted value?\n";
+        
         return r;
       }// if
+
       if(x < r->val){
-        r->left = _remove(r->left, x, success);
+        r->left = _remove(r->left, x, success, violation, violationParent, leftChild);
         if(success)
           r->size_left--;
+        
+        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+          violation = r;
+
+        if(r->left == violation){
+          violationParent = r;
+          leftChild = true;
+        }
       }// if
       else {
-        r->right = _remove(r->right, x, success);
+        r->right = _remove(r->right, x, success, violation, violationParent, leftChild);
         if(success)
           r->size_right--;
+
+        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+          violation = r;
+
+        if(r->left == violation){
+          violationParent = r;
+          leftChild = true;
+        }
       }// else
       return r;
 
@@ -292,7 +310,17 @@ class bst {
 
     bool remove(T & x){
       bool success;
-      root = _remove(root, x, success);
+      bst_node* violation = nullptr;
+      bst_node* violationParent;
+      bool leftChild = false;
+
+      root = _remove(root, x, success, violation, violationParent, leftChild);
+      
+      if(violation != nullptr){
+        std::cout<< "final violation: " <<violation->val <<std::endl;
+        _size_balanced(violation, violationParent, leftChild);
+      }// if
+      
       return success;
     }
 

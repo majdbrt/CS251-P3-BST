@@ -70,6 +70,11 @@ int main(){
   copy->preorder();
 */
 // my code
+int y = 9;
+   
+   t->remove(y);
+   t->inorder();
+   t->preorder();
     delete t;
     
     return 0;

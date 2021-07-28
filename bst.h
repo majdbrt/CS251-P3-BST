@@ -25,8 +25,6 @@ class bst {
 
     };
 
-
-
   public:
     // constructor:  initializes an empty tree
     bst(){
@@ -50,12 +48,12 @@ class bst {
     }
 
   private:
-    static int _max_subTree(int x, int y){
+    static int _max(int x, int y){
       if(x >=  y)
         return x;
       return y;
     }
-    static int _min_subTree(int x, int y){
+    static int _min(int x, int y){
       if(x <= y)
         return x;
       return y;
@@ -90,12 +88,16 @@ class bst {
       }
       if(x < r->val){
         r->left = _insert(r->left, x, success, violation, violationParent, leftChild);
+        // if insertion achieved, increase the # nodes on the left
         if(success)
           r->size_left++;
 
-        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+        // if insertion causes violation (unbalanced tree)
+        // update the pointer to the violator node
+        if(violater_node(_min(r->size_left,r->size_right),_max(r->size_left,r->size_right)))
           violation = r;
 
+        // update the pointer to the parent of violator node
         if(violation != nullptr && r->left == violation){
           violationParent = r;
           leftChild = true;
@@ -110,10 +112,11 @@ class bst {
 
       else {
         r->right = _insert(r->right, x, success, violation, violationParent, leftChild);
+
         if(success)
           r->size_right++;
 
-        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+        if(violater_node(_min(r->size_left,r->size_right),_max(r->size_left,r->size_right)))
           violation = r;
 
         if(violation != nullptr && r->left == violation){
@@ -129,6 +132,10 @@ class bst {
       }// else
     }
 
+    // _to_node_vec()
+    // Helper function for _size_balanced() 
+    // takes an empty array and populates it with pointers to tree nodes in order
+    //
     static void _to_node_vec(std::vector<bst_node*>* arr, bst_node* r){
       if(r == nullptr)
         return;
@@ -138,8 +145,15 @@ class bst {
       _to_node_vec(arr, r->right);
 
       return;
-    }
+    }// _to_node_vec
 
+    // _from_node_vec()
+    // Helper function for _size_balanced() 
+    // takes an array of tree node pointers in ascending order
+    // and arranges the pointers to construct a perfectly balanced tree.
+    //
+    // returns: pointer to the root of the balanced tree.
+    //
     static bst_node* _from_node_vec( std::vector<bst_node*>* &arr, int low, int hi){
       int m;
       bst_node* root;
@@ -149,7 +163,6 @@ class bst {
       
       m = (low + hi)/2;
       root = arr->at(m);
-      //root = arr[m];
 
       root->size_left = m - low;
       root->size_right = hi - m;
@@ -158,25 +171,35 @@ class bst {
       root->right = _from_node_vec(arr, m+1, hi);
       
       return root;
-    }
+    }// from_node_vec
 
-     void _size_balanced(bst_node* &violation, bst_node* &violationParent, bool leftChild){
+    // _size_balanced()
+    // helper function for insert() and remove()
+    // takes a pointer to the violator node and its parent
+    // and constructs an array of pointer to tree nodes in an ascending order
+    // then the array is used to create a perfectly balanced tree
+    //
+    void _size_balanced(bst_node* &violation, bst_node* &violationParent, bool leftChild){
       std::vector<bst_node*> *arr = new std::vector<bst_node*>();
 
       _to_node_vec(arr, violation);
-    
+
+      // the violator node happens to be the root 
       if(violation == this->root){
         violation = _from_node_vec(arr,0, arr->size()-1);
-        //std::cout<<"rebalancing entire tree" <<std::endl;
         this->root = violation;
-      }
+      }// if
+
+      // violator node is not the root
       else{
         violation = _from_node_vec(arr,0, arr->size()-1);
+
+        // reattach the balanced node back to its parent
         if(leftChild)
           violationParent->left = violation;
         else
           violationParent->right = violation;
-      }    
+      }// else    
 
       delete arr;
     }
@@ -201,10 +224,9 @@ class bst {
 
       root = _insert(root, x, success, violation, violationParent, leftChild);
       
-      if(violation != nullptr){
-        //std::cout<< "final violation: " <<violation->val <<std::endl;
+      // if insertion causes violation (unbalanced tree)
+      if(violation != nullptr)
         _size_balanced(violation, violationParent, leftChild);
-      }// if        
       
       return success;
    }
@@ -275,20 +297,26 @@ class bst {
           delete r;
           return tmp;
         }// if
+
         // if we get here, r has two children
         r->val = _min_node(r->right)->val;
+        // update the count of nodes on right
         r->size_right--;
         r->right = _remove(r->right, r->val, sanity, violation, violationParent, leftChild);
-        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+
+        // check if remove results in an unbalanced tree and point to violator & its parent
+        if(violater_node(_min(r->size_left,r->size_right),_max(r->size_left,r->size_right)))
           violation = r;
+
         if(violation != nullptr && r->left == violation){
           violationParent = r;
           leftChild = true;
-        }
+        }// if
         else if(violation != nullptr && r->right == violation){
           violationParent = r;
           leftChild = false;
-        }
+        }// else if
+
         if(!sanity)
           std::cerr << "ERROR:  remove() failed to delete promoted value?\n";
         
@@ -297,41 +325,43 @@ class bst {
 
       if(x < r->val){
         r->left = _remove(r->left, x, success, violation, violationParent, leftChild);
+
         if(success)
           r->size_left--;
         
-        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+        if(violater_node(_min(r->size_left,r->size_right),_max(r->size_left,r->size_right)))
           violation = r;
 
         if(violation != nullptr && r->left == violation){
           violationParent = r;
           leftChild = true;
-        }
+        }// if
         else if(violation != nullptr && r->right == violation){
           violationParent = r;
           leftChild = false;
-        }
-
+        }// else if
       }// if
+
       else {
         r->right = _remove(r->right, x, success, violation, violationParent, leftChild);
+
         if(success)
           r->size_right--;
 
-        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+        if(violater_node(_min(r->size_left,r->size_right),_max(r->size_left,r->size_right)))
           violation = r;
 
         if(violation != nullptr && r->left == violation){
           violationParent = r;
           leftChild = true;
-        }
+        }// if
         else if(violation != nullptr && r->right == violation){
           violationParent = r;
           leftChild = false;
-        }
+        }// else if
       }// else
-      return r;
 
+      return r;
     }
 
   public:
@@ -344,11 +374,9 @@ class bst {
 
       root = _remove(root, x, success, violation, violationParent, leftChild);
       
-      if(violation != nullptr){
-        //std::cout<< "final violation: " <<violation->val <<std::endl;
-        //std::cout<< "balancing entire tree: " <<violation->val <<std::endl;
+      // if _remove results in an unbalanced tree
+      if(violation != nullptr)
         _size_balanced(violation, violationParent, leftChild);
-      }// if
       
       return success;
     }
@@ -363,8 +391,11 @@ class bst {
     }
 
   public: 
-    int size() {
+    int size() {  
       //return _size(root);
+      
+      // instead of calling _size() which takes linear time
+      // use size_left & size_right which uses O(1)
       return this->root->size_left + this->root->size_right + 1;
     }
 
@@ -396,7 +427,13 @@ class bst {
     T max() {
       return _max_node(root)->val;
     }
+
     private:
+
+    // _to_vector
+    // helper function for to_vector()
+    // takes an array and populates it with the elements of the tree in sorted
+    //
     static void _to_vector(std::vector<T>* arr, bst_node* r){
       if(r == nullptr)
         return;
@@ -431,6 +468,10 @@ class bst {
     }
     
     private:
+    //  _get_ith
+    //  helper function for get_ith()
+    //  uses size_left & size_right info in order to find the ith element
+    //
     static void _get_ith(bst_node* r, int i, T &x){
       if(r == nullptr)
         return;
@@ -470,7 +511,7 @@ class bst {
 
       _get_ith(root, i, x);
       
-      return false;   // placeholder
+      return true;  
     }
 
 
@@ -508,28 +549,31 @@ class bst {
       _get_ith_SLOW(t->right, i, x, sofar);
     }
 
-  static void _position_of(bst_node* r, int& i, const T & x){
-    if(r == nullptr){
-      i = -1;
+    // _position_of()
+    // helper function for position_of()
+    // uses size_left & size_right info in order to find the position of x
+    //
+    static void _position_of(bst_node* r, int& i, const T & x){
+      if(r == nullptr){
+        i = -1;
+        return;
+      }
+
+      if(x == r->val){
+        i = i + r->size_left + 1;
+        return;
+      }
+
+      if(x < r->val)
+        _position_of(r->left, i, x);
+
+      else{
+        i = i + r->size_left + 1 ;
+        _position_of(r->right, i, x);
+      }// else
+    
       return;
     }
-
-    if(x == r->val){
-      i = i + r->size_left + 1;
-      return;
-    }
-
-    if(x < r->val)
-      _position_of(r->left, i, x);
-    
-
-    else{
-      i = i + r->size_left + 1 ;
-       _position_of(r->right, i, x);
-    }// else
-    
-    return;
-  }
 
 
   public:
@@ -573,14 +617,18 @@ class bst {
     int position_of(const T & x) {
       int i = 0;
       _position_of(root, i, x);
-      return i;  // placeholder
+      return i;  
     }
 
     private:
-
+    
+    // _num_geq
+    // helper function for num_geq()
+    // uses size_left & size_right info in order to find
+    // the number of element greater than or equal to x
+    //
     static int _num_geq(bst_node* r, const T & x){
 
-     
       if(r == nullptr)
         return 0;
       
@@ -588,32 +636,11 @@ class bst {
         return _num_geq(r->right, x);
       
       else{
-        if((r->left != nullptr && r->left->val < x) || r->left == nullptr){
-          return r->size_right +1 + _num_geq(r->left, x);
+        if((r->left != nullptr && r->left->val < x) || r->left == nullptr)
+          return r->size_right +1 + _num_geq(r->left, x);          
+      }// else
 
-        }
-                  
-      }
-      
-      
       return 1 + r->size_right + _num_geq(r->left, x);
-      
-
-      /*
-      n = n + r->size_right + 1;
-       
-      if(x == r->val)
-        return;
-      
-
-      if(x > r->val){
-        n -= r->size_right + 1;
-        _num_geq(r->right, n, x);
-      }
-      else
-        _num_geq(r->left, n, x);
-      */
-
     }
 
     public:
@@ -625,11 +652,7 @@ class bst {
      * Runtime:  O(h) where h is the tree height
      */
     int num_geq(const T & x) {
-      /*
-      int n = 0;
-      _num_geq(root, n, x);
-      return n;  // placeholder
-      */
+
      return _num_geq(root, x);
     }
 
@@ -656,24 +679,27 @@ class bst {
     }
   
   private:
-  static void _num_leq(bst_node* r, int& n, const T &x){
-    if(r == nullptr)
-      return;
+  
+    // _num_leq
+    // helper function for num_leq()
+    // uses size_left & size_right info in order to find
+    // the number of element less than or equal to x
+    //
+    static int _num_leq(bst_node* r, const T &x){
     
-    n = n + r->size_left + 1;
-
-    if(x == r->val)
-      return;
-    
-    if(x < r->val){
-      n -= r->size_left + 1;
-      _num_leq(r->left, n, x);
+      if(r == nullptr)
+        return 0;
+      
+      if(r->val > x)
+        return _num_leq(r->left, x);
+      
+      else{
+        if((r->right != nullptr && r->right->val > x) || r->right == nullptr)
+          return r->size_left +1 + _num_leq(r->right, x);           
+      }// else
+      return 1 + r->size_left + _num_leq(r->right, x);
     }
-    else{
-      _num_leq(r->right, n, x);
-    }
 
-  }
   public:
 
     /* TODO
@@ -685,9 +711,8 @@ class bst {
      *
      **/
     int num_leq(const T &x) {
-      int n = 0;
-      _num_leq(root, n, x);
-      return n;  // placeholder
+      
+     return _num_leq(root, x);
     }
 
     /*
@@ -711,24 +736,26 @@ class bst {
         total++;
       return total;
     }
-
-    static void _num_range(bst_node* r, int& n, const T & min, const T & max){
+    
+    // _num_lessThan
+    // helper function for num_range()
+    // uses size_left & size_right info in order to find
+    // the number of element less than x
+    //
+    static int _num_lessThan(bst_node* r, const T &x){
+    
       if(r == nullptr)
-        return;
+        return 0;
+      
+      if(r->val >= x)
+        return _num_lessThan(r->left, x);
+      
+      else{
+        if((r->right != nullptr && r->right->val >= x) || r->right == nullptr)
+          return r->size_left +1 + _num_lessThan(r->right, x);         
+      }// else
 
-      if( r->val > max ){
-        _num_range(r->left, n,  min, max);
-        return;
-      }
-
-      if(r->val <  min){
-        _num_range(r->right, n, min, max);
-        return;
-      }
-
-      n++;
-      _num_range(r->left, n, min, max);
-      _num_range(r->right, n, min, max);
+      return 1 + r->size_left + _num_lessThan(r->right, x);
     }
 
   public:
@@ -742,18 +769,8 @@ class bst {
      *
      **/
     int num_range(const T & min, const T & max) {
-      //int n = 0;
-
-     // _num_range(root, n, min, max);
-      
-      //return num_leq(max) - num_leq(min)+1;;
-       int x = num_leq(max) - num_leq(min);
-      int y = num_geq(min) - num_geq(max);
      
-      if(x == y)
-        return x+1;
-      
-      return x + 1;
+      return _num_leq(root,max) - _num_lessThan(root,min);
     }
 
     /*
@@ -778,7 +795,11 @@ class bst {
         total++;
       return total;
     }
-
+ 
+    // _extract_range
+    // helper function for extract_range()
+    // takes an array and fills it with values within the specified range
+    //
     static void _extract_range(bst_node* r, std::vector<T> *answer, const T & min, const T & max){
       if(r == nullptr)
         return;
@@ -792,11 +813,12 @@ class bst {
         _extract_range(r->right, answer, min, max);
         return;
       }
+
       _extract_range(r->left, answer, min, max);
       answer->push_back(r->val);
-      
       _extract_range(r->right, answer, min, max);
     }
+
   public:
 
     /*

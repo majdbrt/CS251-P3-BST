@@ -90,7 +90,8 @@ class bst {
       }
       if(x < r->val){
         r->left = _insert(r->left, x, success, violation, violationParent, leftChild);
-        r->size_left++;
+        if(success)
+          r->size_left++;
 
         if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
           violation = r;
@@ -109,7 +110,8 @@ class bst {
 
       else {
         r->right = _insert(r->right, x, success, violation, violationParent, leftChild);
-        r->size_right++;
+        if(success)
+          r->size_right++;
 
         if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
           violation = r;
@@ -147,6 +149,7 @@ class bst {
       
       m = (low + hi)/2;
       root = arr->at(m);
+      //root = arr[m];
 
       root->size_left = m - low;
       root->size_right = hi - m;
@@ -163,12 +166,12 @@ class bst {
       _to_node_vec(arr, violation);
     
       if(violation == this->root){
-        violation = _from_node_vec(arr,0, violation->size_left + violation->size_right);
-        std::cout<<violation->val <<std::endl;
+        violation = _from_node_vec(arr,0, arr->size()-1);
+        //std::cout<<"rebalancing entire tree" <<std::endl;
         this->root = violation;
       }
       else{
-        violation = _from_node_vec(arr,0, violation->size_left + violation->size_right);
+        violation = _from_node_vec(arr,0, arr->size()-1);
         if(leftChild)
           violationParent->left = violation;
         else
@@ -276,6 +279,16 @@ class bst {
         r->val = _min_node(r->right)->val;
         r->size_right--;
         r->right = _remove(r->right, r->val, sanity, violation, violationParent, leftChild);
+        if(violater_node(_min_subTree(r->size_left,r->size_right),_max_subTree(r->size_left,r->size_right)))
+          violation = r;
+        if(violation != nullptr && r->left == violation){
+          violationParent = r;
+          leftChild = true;
+        }
+        else if(violation != nullptr && r->right == violation){
+          violationParent = r;
+          leftChild = false;
+        }
         if(!sanity)
           std::cerr << "ERROR:  remove() failed to delete promoted value?\n";
         
@@ -333,6 +346,7 @@ class bst {
       
       if(violation != nullptr){
         //std::cout<< "final violation: " <<violation->val <<std::endl;
+        //std::cout<< "balancing entire tree: " <<violation->val <<std::endl;
         _size_balanced(violation, violationParent, leftChild);
       }// if
       
@@ -351,7 +365,7 @@ class bst {
   public: 
     int size() {
       //return _size(root);
-      return root->size_left + root->size_right + 1;
+      return this->root->size_left + this->root->size_right + 1;
     }
 
   private:
@@ -564,10 +578,28 @@ class bst {
 
     private:
 
-    static void _num_geq(bst_node* r, int& n, const T & x){
-      if(r == nullptr)
-        return;
+    static int _num_geq(bst_node* r, const T & x){
 
+     
+      if(r == nullptr)
+        return 0;
+      
+      if(r->val < x)
+        return _num_geq(r->right, x);
+      
+      else{
+        if((r->left != nullptr && r->left->val < x) || r->left == nullptr){
+          return r->size_right +1 + _num_geq(r->left, x);
+
+        }
+                  
+      }
+      
+      
+      return 1 + r->size_right + _num_geq(r->left, x);
+      
+
+      /*
       n = n + r->size_right + 1;
        
       if(x == r->val)
@@ -580,6 +612,7 @@ class bst {
       }
       else
         _num_geq(r->left, n, x);
+      */
 
     }
 
@@ -592,9 +625,12 @@ class bst {
      * Runtime:  O(h) where h is the tree height
      */
     int num_geq(const T & x) {
+      /*
       int n = 0;
       _num_geq(root, n, x);
       return n;  // placeholder
+      */
+     return _num_geq(root, x);
     }
 
     /*
@@ -706,11 +742,18 @@ class bst {
      *
      **/
     int num_range(const T & min, const T & max) {
-      int n = 0;
+      //int n = 0;
 
-      _num_range(root, n, min, max);
+     // _num_range(root, n, min, max);
       
-      return n;
+      //return num_leq(max) - num_leq(min)+1;;
+       int x = num_leq(max) - num_leq(min);
+      int y = num_geq(min) - num_geq(max);
+     
+      if(x == y)
+        return x+1;
+      
+      return x + 1;
     }
 
     /*
